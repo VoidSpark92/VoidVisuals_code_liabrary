@@ -57,8 +57,7 @@ function addNewProject() {
     title: title,
     lang: lang,
     videoUrl: videoUrl,
-    code: code,
-    likes: 0
+    code: code
   };
 
   let projects = JSON.parse(localStorage.getItem("customProjects")) || [];
@@ -106,7 +105,7 @@ function renderCard(proj) {
           <span class="badge ${badgeClass}">${proj.lang}</span>
           <button class="like-btn" onclick="toggleLike('${proj.id}', this)">
             <span class="heart-icon">♥</span>
-            <span class="like-count">${proj.likes || 0}</span>
+            <span class="like-count">0</span>
           </button>
         </div>
         <h3>${escapeHtml(proj.title)}</h3>
@@ -117,7 +116,7 @@ function renderCard(proj) {
   `;
 
   grid.insertAdjacentHTML("beforeend", cardHtml);
-  restoreLikeState(proj.id);
+  restoreCardLikes(proj.id);
 }
 
 // Delete Project
@@ -194,49 +193,65 @@ function applyFiltersAndSearch() {
   });
 }
 
-// Interactive Like Button Logic
+// ==========================================
+// 100% RELIABLE LIKE SYSTEM
+// ==========================================
+
 function toggleLike(id, btnElement) {
   let userLikes = JSON.parse(localStorage.getItem("voidLikedIds")) || [];
+  let likeCounts = JSON.parse(localStorage.getItem("voidLikeCounts")) || {};
+
   const countSpan = btnElement.querySelector(".like-count");
-  let currentCount = parseInt(countSpan.innerText) || 0;
+  
+  // Agar count pehle se saved nahi hai toh current screen se uthao
+  if (likeCounts[id] === undefined) {
+    likeCounts[id] = parseInt(countSpan.innerText) || 0;
+  }
 
   if (userLikes.includes(id)) {
-    // Unlike
+    // Already liked tha, ab UNLIKE karo
     userLikes = userLikes.filter(item => item !== id);
-    currentCount = Math.max(0, currentCount - 1);
+    likeCounts[id] = Math.max(0, likeCounts[id] - 1);
     btnElement.classList.remove("liked");
   } else {
-    // Like
+    // Like karo
     userLikes.push(id);
-    currentCount += 1;
+    likeCounts[id] += 1;
     btnElement.classList.add("liked");
   }
 
-  countSpan.innerText = currentCount;
+  // Update UI & save to LocalStorage
+  countSpan.innerText = likeCounts[id];
   localStorage.setItem("voidLikedIds", JSON.stringify(userLikes));
-
-  // Sync with customProjects if it's a dynamic project
-  let projects = JSON.parse(localStorage.getItem("customProjects")) || [];
-  let found = false;
-  projects = projects.map(p => {
-    if (p.id === id) {
-      p.likes = currentCount;
-      found = true;
-    }
-    return p;
-  });
-  if (found) {
-    localStorage.setItem("customProjects", JSON.stringify(projects));
-  }
+  localStorage.setItem("voidLikeCounts", JSON.stringify(likeCounts));
 }
 
-// Restore saved likes on load
-function restoreLikeState(id) {
-  let userLikes = JSON.parse(localStorage.getItem("voidLikedIds")) || [];
+// Har card ke like count aur button red status ko load karo
+function restoreCardLikes(id) {
   const card = document.getElementById("card-" + id);
-  if (card && userLikes.includes(id)) {
-    const likeBtn = card.querySelector(".like-btn");
-    if (likeBtn) likeBtn.classList.add("liked");
+  if (!card) return;
+
+  const likeBtn = card.querySelector(".like-btn");
+  const countSpan = card.querySelector(".like-count");
+  if (!likeBtn || !countSpan) return;
+
+  let userLikes = JSON.parse(localStorage.getItem("voidLikedIds")) || [];
+  let likeCounts = JSON.parse(localStorage.getItem("voidLikeCounts")) || {};
+
+  // Agar LocalStorage me count saved hai toh set karo
+  if (likeCounts[id] !== undefined) {
+    countSpan.innerText = likeCounts[id];
+  } else {
+    // Agar nahi hai toh jo HTML me likha hai usko save karlo
+    likeCounts[id] = parseInt(countSpan.innerText) || 0;
+    localStorage.setItem("voidLikeCounts", JSON.stringify(likeCounts));
+  }
+
+  // Check karo user ne already like kiya hai ya nahi
+  if (userLikes.includes(id)) {
+    likeBtn.classList.add("liked");
+  } else {
+    likeBtn.classList.remove("liked");
   }
 }
 
@@ -244,14 +259,14 @@ function escapeHtml(text) {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-// Restore on startup
+// Page load hone par restore karein
 window.addEventListener("DOMContentLoaded", () => {
-  // Load custom cards
+  // Custom cards render karo
   let projects = JSON.parse(localStorage.getItem("customProjects")) || [];
   projects.forEach(p => renderCard(p));
 
-  // Restore static card likes
-  restoreLikeState("static-1");
-  restoreLikeState("static-2");
-  restoreLikeState("static-3");
+  // Static cards ke likes restore karo
+  restoreCardLikes("static-1");
+  restoreCardLikes("static-2");
+  restoreCardLikes("static-3");
 });
