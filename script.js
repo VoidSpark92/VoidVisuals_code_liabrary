@@ -1,4 +1,10 @@
-// One-Click Code Copy Function
+// ========================================================
+// VoidVisuals Master Engine - Zero Video / Pure Sandbox
+// Features: Sandbox Live Preview, Local Auth/Admin, & Comments
+// Engineered by </VoidSpark92>
+// ========================================================
+
+// 1. One-Click Code Copy System
 function copyCode(elementId, btnElement) {
   const codeElem = document.getElementById(elementId);
   if (!codeElem) return;
@@ -12,43 +18,196 @@ function copyCode(elementId, btnElement) {
     
     setTimeout(() => {
       btnElement.innerText = originalText;
-      btnElement.style.background = "#38bdf8";
-      btnElement.style.color = "#040914";
+      btnElement.style.background = "";
+      btnElement.style.color = "";
     }, 2000);
   });
 }
 
-// Admin Passcode Setup
-const ADMIN_SECRET = "void92";
+// 2. Interactive Live Sandbox Preview
+function runLivePreview(elementId) {
+  const codeElem = document.getElementById(elementId);
+  if (!codeElem) return;
 
+  let code = codeElem.innerText;
+  const modal = document.getElementById("previewModal");
+  const iframe = document.getElementById("previewIframe");
+
+  // Agar pure C++ code hai toh realistic terminal output dikhayega
+  if (code.includes("#include <iostream>")) {
+    code = `
+      <!DOCTYPE html>
+      <html>
+      <body style="background:#040914; color:#38bdf8; font-family:monospace; padding:30px; font-size:1.1rem; line-height:1.6;">
+        <p style="color:#64748b;">[Compiling & Executing C++ Engine...]</p>
+        <p style="color:#f8fafc; font-weight:bold;">&gt; &lt;/VoidSpark92&gt; Engine Ready!</p>
+        <p style="color:#22c55e; margin-top:20px;">Process finished with exit code 0.</p>
+      </body>
+      </html>
+    `;
+  }
+
+  modal.style.display = "flex";
+  iframe.srcdoc = code;
+}
+
+function closePreviewModal() {
+  document.getElementById("previewModal").style.display = "none";
+  document.getElementById("previewIframe").srcdoc = "";
+}
+
+// 3. User Authentication & Master Admin Session
+let authMode = "signup"; // "signup" or "login"
+
+const MASTER_ADMIN = {
+  username: "VoidSpark92",
+  password: "void92",
+  role: "admin"
+};
+
+function openAuthModal(mode) {
+  authMode = mode;
+  const modal = document.getElementById("authModal");
+  const title = document.getElementById("authModalTitle");
+  const submitBtn = document.getElementById("authSubmitBtn");
+  const toggleText = document.getElementById("authToggleText");
+
+  if (mode === "signup") {
+    title.innerText = "Create Void Account";
+    submitBtn.innerText = "Sign Up 🚀";
+    toggleText.innerText = "Already have an account? Log In";
+  } else {
+    title.innerText = "Log In to VoidVisuals";
+    submitBtn.innerText = "Log In ⚡";
+    toggleText.innerText = "Don't have an account? Sign Up";
+  }
+
+  document.getElementById("authUsername").value = "";
+  document.getElementById("authPassword").value = "";
+  modal.style.display = "flex";
+}
+
+function closeAuthModal() {
+  document.getElementById("authModal").style.display = "none";
+}
+
+function toggleAuthMode() {
+  openAuthModal(authMode === "signup" ? "login" : "signup");
+}
+
+function handleAuthSubmit() {
+  const usernameInput = document.getElementById("authUsername").value.trim();
+  const passwordInput = document.getElementById("authPassword").value.trim();
+
+  if (!usernameInput || !passwordInput) {
+    alert("Kripya Username aur Password dono daalein!");
+    return;
+  }
+
+  let users = JSON.parse(localStorage.getItem("voidUsers")) || [];
+
+  if (authMode === "signup") {
+    if (usernameInput.toLowerCase() === MASTER_ADMIN.username.toLowerCase()) {
+      alert("Yeh username creator ke liye reserved hai! Log In par click karein.");
+      return;
+    }
+
+    const exists = users.find(u => u.username.toLowerCase() === usernameInput.toLowerCase());
+    if (exists) {
+      alert("Yeh username pehle se exist karta hai! Naya naam chunein.");
+      return;
+    }
+
+    const newUser = { username: usernameInput, password: passwordInput, role: "user" };
+    users.push(newUser);
+    localStorage.setItem("voidUsers", JSON.stringify(users));
+    setCurrentSession(newUser);
+    alert(`Account create ho gaya! Welcome, ${newUser.username}.`);
+  } else {
+    // Log In
+    if (usernameInput.toLowerCase() === MASTER_ADMIN.username.toLowerCase() && passwordInput === MASTER_ADMIN.password) {
+      setCurrentSession(MASTER_ADMIN);
+      alert("Master Admin </VoidSpark92> verified!");
+    } else {
+      const match = users.find(u => u.username.toLowerCase() === usernameInput.toLowerCase() && u.password === passwordInput);
+      if (match) {
+        setCurrentSession(match);
+        alert(`Welcome back, ${match.username}!`);
+      } else {
+        alert("Galat username ya password!");
+        return;
+      }
+    }
+  }
+
+  closeAuthModal();
+  syncAuthUI();
+}
+
+function setCurrentSession(user) {
+  localStorage.setItem("currentUserSession", JSON.stringify({
+    username: user.username,
+    role: user.role
+  }));
+}
+
+function logoutUser() {
+  localStorage.removeItem("currentUserSession");
+  syncAuthUI();
+}
+
+function syncAuthUI() {
+  const session = JSON.parse(localStorage.getItem("currentUserSession"));
+  const loggedOutView = document.getElementById("loggedOutView");
+  const loggedInView = document.getElementById("loggedInView");
+  const displayUsername = document.getElementById("displayUsername");
+  const userBadge = document.getElementById("userBadge");
+  const userRoleIcon = document.getElementById("userRoleIcon");
+  const adminOpenBtn = document.querySelector(".admin-open-btn");
+
+  if (session) {
+    loggedOutView.style.display = "none";
+    loggedInView.style.display = "flex";
+    displayUsername.innerText = session.username;
+
+    if (session.role === "admin") {
+      userRoleIcon.innerText = "👑";
+      userBadge.classList.add("admin-glow");
+      if (adminOpenBtn) adminOpenBtn.style.display = "block";
+    } else {
+      userRoleIcon.innerText = "👤";
+      userBadge.classList.remove("admin-glow");
+      if (adminOpenBtn) adminOpenBtn.style.display = "none";
+    }
+  } else {
+    loggedOutView.style.display = "flex";
+    loggedInView.style.display = "none";
+    if (adminOpenBtn) adminOpenBtn.style.display = "none";
+  }
+}
+
+// 4. Admin Modal & Card Publisher (NO Video requirements)
 function openAdminModal() {
-  document.getElementById("adminModal").style.display = "flex";
+  const session = JSON.parse(localStorage.getItem("currentUserSession"));
+  if (session && session.role === "admin") {
+    document.getElementById("adminModal").style.display = "flex";
+    updateAdminProjectList();
+  } else {
+    alert("Keval Master Admin </VoidSpark92> login karke isse access kar sakte hain!");
+  }
 }
 
 function closeAdminModal() {
   document.getElementById("adminModal").style.display = "none";
 }
 
-function verifyAdmin() {
-  const enteredPass = document.getElementById("adminPass").value;
-  if (enteredPass === ADMIN_SECRET) {
-    document.getElementById("adminAuth").style.display = "none";
-    document.getElementById("adminForm").style.display = "block";
-    updateAdminProjectList();
-  } else {
-    alert("Incorrect passcode! Only </VoidSpark92> can access.");
-  }
-}
-
-// Add New Project via Admin Form
 function addNewProject() {
   const title = document.getElementById("projTitle").value.trim();
   const lang = document.getElementById("projLang").value;
-  const videoUrl = document.getElementById("projVideo").value.trim();
   const code = document.getElementById("projCode").value.trim();
 
   if (!title || !code) {
-    alert("Title aur Code enter karna zaroori hai!");
+    alert("Title aur Code snippet bharna zaroori hai!");
     return;
   }
 
@@ -56,7 +215,6 @@ function addNewProject() {
     id: "custom-" + Date.now(),
     title: title,
     lang: lang,
-    videoUrl: videoUrl,
     code: code
   };
 
@@ -67,14 +225,11 @@ function addNewProject() {
   renderCard(project);
   updateAdminProjectList();
 
-  // Reset & Close
   document.getElementById("projTitle").value = "";
-  document.getElementById("projVideo").value = "";
   document.getElementById("projCode").value = "";
   closeAdminModal();
 }
 
-// Render dynamic card (with manual Play Controls, NO loop)
 function renderCard(proj) {
   const grid = document.querySelector(".grid-container");
 
@@ -82,24 +237,8 @@ function renderCard(proj) {
   if (proj.lang === "JavaScript") badgeClass = "js-badge";
   if (proj.lang === "C++") badgeClass = "cpp-badge";
 
-  let mediaHtml = `<span style="color:#64748b; font-size:0.9rem;">No Video Attached</span>`;
-  if (proj.videoUrl) {
-    if (proj.videoUrl.endsWith('.gif')) {
-      mediaHtml = `<img src="${escapeHtml(proj.videoUrl)}" alt="Preview" style="width:100%; height:100%; object-fit:cover;">`;
-    } else {
-      mediaHtml = `
-        <video src="${escapeHtml(proj.videoUrl)}" controls playsinline preload="metadata" style="width:100%; height:100%; object-fit:cover;">
-          Your browser does not support video.
-        </video>
-      `;
-    }
-  }
-
   const cardHtml = `
     <div class="code-card" id="card-${proj.id}">
-      <div class="video-preview">
-        ${mediaHtml}
-      </div>
       <div class="card-details">
         <div class="card-meta">
           <span class="badge ${badgeClass}">${proj.lang}</span>
@@ -110,16 +249,33 @@ function renderCard(proj) {
         </div>
         <h3>${escapeHtml(proj.title)}</h3>
         <pre><code id="${proj.id}">${escapeHtml(proj.code)}</code></pre>
-        <button class="copy-btn" onclick="copyCode('${proj.id}', this)">Copy Code</button>
+        <div class="card-action-bar">
+          <button class="copy-btn" onclick="copyCode('${proj.id}', this)">Copy Code</button>
+          <button class="preview-btn" onclick="runLivePreview('${proj.id}')">▶️ Live Preview</button>
+        </div>
+
+        <div class="comments-wrapper">
+          <div class="comments-header" onclick="toggleComments('${proj.id}')">
+            <span>💬 Comments (<span id="count-${proj.id}">0</span>)</span>
+            <span class="toggle-arrow">▼</span>
+          </div>
+          <div class="comments-body" id="comments-box-${proj.id}" style="display: none;">
+            <div class="comments-list" id="list-${proj.id}"></div>
+            <div class="comment-input-row">
+              <input type="text" id="input-${proj.id}" placeholder="Write a comment...">
+              <button class="action-btn comment-post-btn" onclick="postComment('${proj.id}')">Send</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   `;
 
   grid.insertAdjacentHTML("beforeend", cardHtml);
-  restoreCardLikes(proj.id);
+  syncCardLike(proj.id);
+  syncComments(proj.id);
 }
 
-// Delete Project
 function deleteProject(projId) {
   if (!confirm("Kya aap sach me ye project delete karna chahte hain?")) return;
 
@@ -133,7 +289,6 @@ function deleteProject(projId) {
   updateAdminProjectList();
 }
 
-// Update Admin Delete List
 function updateAdminProjectList() {
   const listContainer = document.getElementById("adminProjectList");
   if (!listContainer) return;
@@ -152,10 +307,110 @@ function updateAdminProjectList() {
   `).join("");
 }
 
-// Active Filter State Tracker
+// 5. Comments Engine (LocalStorage Persistent)
+function toggleComments(cardId) {
+  const box = document.getElementById("comments-box-" + cardId);
+  if (!box) return;
+  box.style.display = box.style.display === "none" ? "block" : "none";
+}
+
+function postComment(cardId) {
+  const session = JSON.parse(localStorage.getItem("currentUserSession"));
+  if (!session) {
+    alert("Comment karne ke liye pehle Log In ya Sign Up karein!");
+    openAuthModal("login");
+    return;
+  }
+
+  const input = document.getElementById("input-" + cardId);
+  const text = input.value.trim();
+  if (!text) return;
+
+  let allComments = JSON.parse(localStorage.getItem("voidComments")) || {};
+  if (!allComments[cardId]) allComments[cardId] = [];
+
+  allComments[cardId].push({
+    user: session.username,
+    role: session.role,
+    text: text,
+    timestamp: Date.now()
+  });
+
+  localStorage.setItem("voidComments", JSON.stringify(allComments));
+  input.value = "";
+  syncComments(cardId);
+}
+
+function syncComments(cardId) {
+  let allComments = JSON.parse(localStorage.getItem("voidComments")) || {};
+  const list = document.getElementById("list-" + cardId);
+  const countSpan = document.getElementById("count-" + cardId);
+  const cardComments = allComments[cardId] || [];
+
+  if (countSpan) countSpan.innerText = cardComments.length;
+  if (!list) return;
+
+  if (cardComments.length === 0) {
+    list.innerHTML = `<p style="color:#64748b; font-size:0.75rem; margin:4px 0;">No comments yet. Be the first!</p>`;
+    return;
+  }
+
+  list.innerHTML = cardComments.map(c => `
+    <div class="comment-item">
+      <strong>${c.role === 'admin' ? '👑 ' : ''}${escapeHtml(c.user)}:</strong> ${escapeHtml(c.text)}
+    </div>
+  `).join("");
+}
+
+// 6. Like Counter Engine
+function toggleLike(id, btnElement) {
+  let userLikes = JSON.parse(localStorage.getItem("voidLikedIds")) || [];
+  let allCounts = JSON.parse(localStorage.getItem("voidLikeCounts")) || {};
+  const countSpan = btnElement.querySelector(".like-count");
+  
+  let currentCount = allCounts[id] !== undefined ? allCounts[id] : parseInt(countSpan.innerText) || 0;
+
+  if (userLikes.includes(id)) {
+    userLikes = userLikes.filter(item => item !== id);
+    currentCount = Math.max(0, currentCount - 1);
+    btnElement.classList.remove("liked");
+  } else {
+    userLikes.push(id);
+    currentCount += 1;
+    btnElement.classList.add("liked");
+  }
+
+  allCounts[id] = currentCount;
+  countSpan.innerText = currentCount;
+  localStorage.setItem("voidLikedIds", JSON.stringify(userLikes));
+  localStorage.setItem("voidLikeCounts", JSON.stringify(allCounts));
+}
+
+function syncCardLike(id) {
+  const card = document.getElementById("card-" + id);
+  if (!card) return;
+
+  const btn = card.querySelector(".like-btn");
+  const countSpan = card.querySelector(".like-count");
+  if (!btn || !countSpan) return;
+
+  let userLikes = JSON.parse(localStorage.getItem("voidLikedIds")) || [];
+  let allCounts = JSON.parse(localStorage.getItem("voidLikeCounts")) || {};
+
+  if (allCounts[id] !== undefined) {
+    countSpan.innerText = allCounts[id];
+  }
+
+  if (userLikes.includes(id)) {
+    btn.classList.add("liked");
+  } else {
+    btn.classList.remove("liked");
+  }
+}
+
+// 7. Search & Category Filters
 let activeCategory = "All";
 
-// Category Filter Function
 function filterCards(category, btnElement) {
   activeCategory = category;
   document.querySelectorAll(".filter-btn").forEach(btn => btn.classList.remove("active"));
@@ -163,12 +418,10 @@ function filterCards(category, btnElement) {
   applyFiltersAndSearch();
 }
 
-// Live Search Function
 function handleSearch() {
   applyFiltersAndSearch();
 }
 
-// Combined Search & Filter Engine
 function applyFiltersAndSearch() {
   const query = document.getElementById("searchInput").value.toLowerCase().trim();
   const cards = document.querySelectorAll(".code-card");
@@ -185,88 +438,25 @@ function applyFiltersAndSearch() {
     const matchesCategory = (activeCategory === "All" || cardLang === activeCategory);
     const matchesSearch = (!query || titleText.includes(query) || codeText.includes(query));
 
-    if (matchesCategory && matchesSearch) {
-      card.style.display = "flex";
-    } else {
-      card.style.display = "none";
-    }
+    card.style.display = (matchesCategory && matchesSearch) ? "flex" : "none";
   });
-}
-
-// ==========================================
-// 100% RELIABLE LIKE SYSTEM
-// ==========================================
-
-function toggleLike(id, btnElement) {
-  let userLikes = JSON.parse(localStorage.getItem("voidLikedIds")) || [];
-  let likeCounts = JSON.parse(localStorage.getItem("voidLikeCounts")) || {};
-
-  const countSpan = btnElement.querySelector(".like-count");
-  
-  // Agar count pehle se saved nahi hai toh current screen se uthao
-  if (likeCounts[id] === undefined) {
-    likeCounts[id] = parseInt(countSpan.innerText) || 0;
-  }
-
-  if (userLikes.includes(id)) {
-    // Already liked tha, ab UNLIKE karo
-    userLikes = userLikes.filter(item => item !== id);
-    likeCounts[id] = Math.max(0, likeCounts[id] - 1);
-    btnElement.classList.remove("liked");
-  } else {
-    // Like karo
-    userLikes.push(id);
-    likeCounts[id] += 1;
-    btnElement.classList.add("liked");
-  }
-
-  // Update UI & save to LocalStorage
-  countSpan.innerText = likeCounts[id];
-  localStorage.setItem("voidLikedIds", JSON.stringify(userLikes));
-  localStorage.setItem("voidLikeCounts", JSON.stringify(likeCounts));
-}
-
-// Har card ke like count aur button red status ko load karo
-function restoreCardLikes(id) {
-  const card = document.getElementById("card-" + id);
-  if (!card) return;
-
-  const likeBtn = card.querySelector(".like-btn");
-  const countSpan = card.querySelector(".like-count");
-  if (!likeBtn || !countSpan) return;
-
-  let userLikes = JSON.parse(localStorage.getItem("voidLikedIds")) || [];
-  let likeCounts = JSON.parse(localStorage.getItem("voidLikeCounts")) || {};
-
-  // Agar LocalStorage me count saved hai toh set karo
-  if (likeCounts[id] !== undefined) {
-    countSpan.innerText = likeCounts[id];
-  } else {
-    // Agar nahi hai toh jo HTML me likha hai usko save karlo
-    likeCounts[id] = parseInt(countSpan.innerText) || 0;
-    localStorage.setItem("voidLikeCounts", JSON.stringify(likeCounts));
-  }
-
-  // Check karo user ne already like kiya hai ya nahi
-  if (userLikes.includes(id)) {
-    likeBtn.classList.add("liked");
-  } else {
-    likeBtn.classList.remove("liked");
-  }
 }
 
 function escapeHtml(text) {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-// Page load hone par restore karein
+// 8. Bootstrap Initial State
 window.addEventListener("DOMContentLoaded", () => {
-  // Custom cards render karo
+  syncAuthUI();
+
+  // Static cards likes & comments sync
+  ["static-1", "static-2", "static-3"].forEach(id => {
+    syncCardLike(id);
+    syncComments(id);
+  });
+
+  // Custom user projects render
   let projects = JSON.parse(localStorage.getItem("customProjects")) || [];
   projects.forEach(p => renderCard(p));
-
-  // Static cards ke likes restore karo
-  restoreCardLikes("static-1");
-  restoreCardLikes("static-2");
-  restoreCardLikes("static-3");
 });
