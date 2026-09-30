@@ -1,1 +1,82 @@
-[]
+[
+  {
+    "id": "CPP_ALGO_TWO_POINTER_REV",
+    "title": "In-Place String Reversal",
+    "category": "Algorithms",
+    "desc": "Reverses a string in-place using two pointers with minimal auxiliary space.",
+    "code": "#include <iostream>\n#include <string>\n\nvoid reverseString(std::string &str) {\n    int left = 0, right = str.length() - 1;\n    while (left < right) {\n        std::swap(str[left], str[right]);\n        left++;\n        right--;\n    }\n}\n\nint main() {\n    std::string text = \"VORTEX\";\n    reverseString(text);\n    std::cout << \"Reversed: \" << text << \"\\n\";\n    return 0;\n}",
+    "output": "Reversed: XETROV\n\nProcess finished with exit code 0."
+  },
+  {
+    "id": "CPP_ALGO_BINARY_SEARCH",
+    "title": "Binary Search on Sorted Array",
+    "category": "Algorithms",
+    "desc": "Classic divide-and-conquer binary search algorithm with O(log n) performance.",
+    "code": "#include <iostream>\n#include <vector>\n\nint binarySearch(const std::vector<int>& arr, int target) {\n    int low = 0, high = arr.size() - 1;\n    while (low <= high) {\n        int mid = low + (high - low) / 2;\n        if (arr[mid] == target) return mid;\n        if (arr[mid] < target) low = mid + 1;\n        else high = mid - 1;\n    }\n    return -1;\n}\n\nint main() {\n    std::vector<int> arr = {10, 20, 30, 40, 50, 60};\n    int index = binarySearch(arr, 40);\n    std::cout << \"Found at index: \" << index << \"\\n\";\n    return 0;\n}",
+    "output": "Found at index: 3\n\nProcess finished with exit code 0."
+  },
+  {
+    "id": "CPP_STL_VECTOR_SORT",
+    "title": "Vector Sorting & Traversal",
+    "category": "STL",
+    "desc": "Dynamic array insertion, sorting via std::sort, and range-based loops.",
+    "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n\nint main() {\n    std::vector<int> nums = {45, 12, 85, 32, 89};\n    nums.push_back(10);\n    std::sort(nums.begin(), nums.end());\n\n    std::cout << \"Sorted Numbers: \";\n    for (int n : nums) {\n        std::cout << n << \" \";\n    }\n    return 0;\n}",
+    "output": "Sorted Numbers: 10 12 32 45 85 89 \n\nProcess finished with exit code 0."
+  },
+  {
+    "id": "CPP_HASH_FREQ_COUNTER",
+    "title": "Frequency Counter with Hash Map",
+    "category": "Data Structures",
+    "desc": "Computes item occurrences in O(n) time complexity using std::unordered_map.",
+    "code": "#include <iostream>\n#include <vector>\n#include <unordered_map>\n\nint main() {\n    std::vector<std::string> items = {\"apple\", \"banana\", \"apple\", \"orange\", \"banana\", \"apple\"};\n    std::unordered_map<std::string, int> counts;\n\n    for (const auto& item : items) counts[item]++;\n\n    for (const auto& [name, count] : counts) {\n        std::cout << name << \": \" << count << \"\\n\";\n    }\n    return 0;\n}",
+    "output": "apple: 3\nbanana: 2\norange: 1\n\nProcess finished with exit code 0."
+  },
+  {
+    "id": "CPP_STL_CUSTOM_SORT",
+    "title": "Custom Comparator Sorting",
+    "category": "Algorithms",
+    "desc": "Sorts structures (leaderboards) in descending order using custom rules.",
+    "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n\nstruct PlayerScore {\n    std::string name;\n    int score;\n};\n\nint main() {\n    std::vector<PlayerScore> leaderboard = {\n        {\"Alex\", 450}, {\"Zara\", 890}, {\"Leo\", 620}\n    };\n\n    std::sort(leaderboard.begin(), leaderboard.end(), [](const PlayerScore& a, const PlayerScore& b) {\n        return a.score > b.score;\n    });\n\n    for (const auto& p : leaderboard) std::cout << p.name << \" : \" << p.score << \"\\n\";\n    return 0;\n}",
+    "output": "Zara : 890\nLeo : 620\nAlex : 450\n\nProcess finished with exit code 0."
+  },
+  {
+    "id": "CPP_OOP_ENCAPSULATION",
+    "title": "Encapsulation & Class State",
+    "category": "OOP",
+    "desc": "Standard OOP pattern with private state fields, methods, and mutations.",
+    "code": "#include <iostream>\n\nclass Player {\nprivate:\n    std::string name;\n    int health;\npublic:\n    Player(std::string n, int h) : name(n), health(h) {}\n    void takeDamage(int dmg) { health = std::max(0, health - dmg); }\n    void display() const { std::cout << name << \" | Health: \" << health << \"\\n\"; }\n};\n\nint main() {\n    Player p1(\"Ghost\", 100);\n    p1.takeDamage(35);\n    p1.display();\n    return 0;\n}",
+    "output": "Ghost | Health: 65\n\nProcess finished with exit code 0."
+  },
+  {
+    "id": "CPP_IO_FILE_STREAM",
+    "title": "Persistent File I/O",
+    "category": "Core",
+    "desc": "Writes text data to disk via std::ofstream and reads line-by-line using std::ifstream.",
+    "code": "#include <iostream>\n#include <fstream>\n#include <string>\n\nint main() {\n    std::ofstream outFile(\"save.txt\");\n    outFile << \"Highscore: 9999\\n\";\n    outFile.close();\n\n    std::ifstream inFile(\"save.txt\");\n    std::string line;\n    while (std::getline(inFile, line)) {\n        std::cout << \"Read from file: \" << line << \"\\n\";\n    }\n    inFile.close();\n    return 0;\n}",
+    "output": "Read from file: Highscore: 9999\n\nProcess finished with exit code 0."
+  },
+  {
+    "id": "CPP_ERROR_TRY_CATCH",
+    "title": "Runtime Exception Handling",
+    "category": "Core",
+    "desc": "Catches runtime exceptions using structured try, catch, and std::runtime_error.",
+    "code": "#include <iostream>\n#include <stdexcept>\n\ndouble safeDivide(double a, double b) {\n    if (b == 0.0) throw std::runtime_error(\"ZeroDivisionError: Cannot divide by zero!\");\n    return a / b;\n}\n\nint main() {\n    try {\n        std::cout << safeDivide(10, 2) << \"\\n\";\n        std::cout << safeDivide(5, 0) << \"\\n\";\n    } catch (const std::exception& e) {\n        std::cerr << \"Caught error: \" << e.what() << \"\\n\";\n    }\n    return 0;\n}",
+    "output": "5\nCaught error: ZeroDivisionError: Cannot divide by zero!\n\nProcess finished with exit code 0."
+  },
+  {
+    "id": "CPP_LAMBDA_COUNT_IF",
+    "title": "Lambda Expression Predicate",
+    "category": "Modern C++",
+    "desc": "Inline anonymous lambda function passed to std::count_if to filter items.",
+    "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n\nint main() {\n    std::vector<int> vals = {1, 4, 7, 10, 13, 16};\n    int evens = std::count_if(vals.begin(), vals.end(), [](int x) { return x % 2 == 0; });\n    std::cout << \"Even count: \" << evens << \"\\n\";\n    return 0;\n}",
+    "output": "Even count: 3\n\nProcess finished with exit code 0."
+  },
+  {
+    "id": "CPP_SMART_PTR_UNIQUE",
+    "title": "Automatic Resource Cleanup",
+    "category": "Memory Management",
+    "desc": "Automatic heap allocation and deterministic memory deallocation with std::unique_ptr.",
+    "code": "#include <iostream>\n#include <memory>\n\nclass Weapon {\npublic:\n    Weapon() { std::cout << \"Weapon equipped!\\n\"; }\n    ~Weapon() { std::cout << \"Weapon destroyed (auto-cleaned)!\\n\"; }\n    void shoot() { std::cout << \"Bang!\\n\"; }\n};\n\nint main() {\n    std::unique_ptr<Weapon> gun = std::make_unique<Weapon>();\n    gun->shoot();\n    return 0;\n}",
+    "output": "Weapon equipped!\nBang!\nWeapon destroyed (auto-cleaned)!\n\nProcess finished with exit code 0."
+  }
+]
